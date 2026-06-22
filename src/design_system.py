@@ -138,18 +138,20 @@ def build_palette(primary_hex: str, secondary_hex: str = "") -> Palette:
 
 @dataclass
 class Spacing:
-    unit:   int    # Base unit (~20px at 1080)
-    xs:     int
-    sm:     int
-    md:     int
-    lg:     int
-    xl:     int
-    margin: int    # Safe side margin
-    vpad:   int    # Vertical safe padding from bottom
+    unit:   int    # Base unit (~21px at 1080)
+    xs:     int    # ½u  — fine gaps, icon padding
+    sm:     int    # 1u  — tight gap between related elements
+    md:     int    # 2u  — gap between distinct elements
+    lg:     int    # 3u  — section gap
+    xl:     int    # 5u  — generous gap / CTA horizontal padding
+    margin: int    # Outer canvas safe margin (both axes, derived from min dimension)
+    inner:  int    # Panel-interior gap — narrower than margin, used where image meets text
+    vpad:   int    # Vertical safe padding from top/bottom canvas edges
 
 
 def build_spacing(w: int, h: int) -> Spacing:
-    unit = max(14, min(w, h) // 50)
+    ref  = min(w, h)          # Orientation-invariant reference dimension
+    unit = max(14, ref // 50)
     return Spacing(
         unit   = unit,
         xs     = max(6,  unit // 2),
@@ -157,8 +159,9 @@ def build_spacing(w: int, h: int) -> Spacing:
         md     = unit * 2,
         lg     = unit * 3,
         xl     = unit * 5,
-        margin = max(44, int(w * 0.068)),
-        vpad   = max(36, int(h * 0.052)),
+        margin = max(44, int(ref * 0.076)),   # ~82px at 1080 — consistent across orientations
+        inner  = max(28, int(ref * 0.048)),   # ~52px at 1080 — tighter, for panel seams
+        vpad   = max(36, int(h   * 0.052)),   # Vertical: relative to canvas height
     )
 
 
@@ -425,35 +428,42 @@ def draw_shadow_text(
 
 def draw_cta(
     draw: ImageDraw.Draw,
-    cx: int,       # center x
-    y: int,        # top y
+    cx: int,                # Anchor x — meaning depends on align
+    y: int,                 # Top y of button
     label: str,
     fnt: ImageFont.FreeTypeFont,
     fill: RGB,
     text_color: RGB,
-    corner: int = 0,   # 0 = pill
+    corner: int = 0,        # 0 = full pill
     pad_x: int = 40,
     pad_y: int = 18,
+    align: str = "center",  # "center": cx is center | "left": cx is left edge | "right": cx is right edge
 ) -> int:
-    """Draw a CTA button centered at cx. Returns button bottom y."""
+    """Draw a CTA button. Returns button bottom y."""
     tw, th = measure_text(draw, label, fnt)
     bw = tw + pad_x * 2
     bh = th + pad_y * 2
     radius = corner if corner > 0 else bh // 2
 
-    x1 = cx - bw // 2
-    x2 = cx + bw // 2
+    if align == "left":
+        x1, x2 = cx, cx + bw
+    elif align == "right":
+        x1, x2 = cx - bw, cx
+    else:  # center
+        x1 = cx - bw // 2
+        x2 = cx + bw // 2
+
     y2 = y + bh
 
-    # Subtle inner glow
+    # Subtle inner glow ring
     glow = lighten(fill, 0.12)
     draw.rounded_rectangle([x1 - 2, y - 2, x2 + 2, y2 + 2], radius=radius + 2, fill=(*glow, 80))
     draw.rounded_rectangle([x1, y, x2, y2], radius=radius, fill=fill)
 
-    # Text centered in button
-    tx = cx - tw // 2
-    ty = y + pad_y
-    draw.text((tx, ty), label, font=fnt, fill=text_color)
+    # anchor="mm" visually centers glyphs at button center — handles font bearing precisely
+    btn_cx = (x1 + x2) // 2
+    btn_cy = y + bh // 2
+    draw.text((btn_cx, btn_cy), label, font=fnt, fill=text_color, anchor="mm")
 
     return y2
 
@@ -481,7 +491,8 @@ def draw_badge(
         x1 = x
 
     draw.rounded_rectangle([x1, y, x1 + bw, y + bh], radius=corner, fill=bg)
-    draw.text((x1 + pad_x, y + pad_y), text, font=fnt, fill=fg)
+    # anchor="mm" visually centers label glyphs within badge
+    draw.text((x1 + bw // 2, y + bh // 2), text, font=fnt, fill=fg, anchor="mm")
     return x1 + bw
 
 

@@ -12,5 +12,12 @@ output/
 static/uploads/
 
 *.log
+flask_*.txt
+
 .DS_Store
 Thumbs.db
+
+# Development / session notes — not for submission
+CLAUDE.md
+TODO.md
+PROJECT_STATUS.md

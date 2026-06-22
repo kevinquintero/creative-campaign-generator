@@ -224,4 +224,6 @@ def _clear_folder(folder: str):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    # use_reloader=False: Werkzeug's watchdog incorrectly detects standard
+    # library files as changed on Python 3.14+ and restarts mid-request.
+    app.run(debug=True, use_reloader=False, port=5000)
