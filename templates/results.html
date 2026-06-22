@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Results — {{ brief.campaign_name }} · Creative Automation Pipeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+        </svg>
+        <span class="brand-name">Creative Automation Pipeline</span>
+        <span class="brand-badge">v1.0</span>
+      </div>
+      <nav class="header-nav">
+        <a href="/" class="nav-item">Generate</a>
+        <span class="nav-item active">Results</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+
+    <!-- ── Run hero ── -->
+    <div class="results-hero">
+      <div class="results-hero-inner">
+        <div class="results-hero-left">
+          <div>
+            <div class="run-badge">
+              <span class="run-badge-dot"></span>
+              Run complete
+            </div>
+            <h1 class="results-campaign-name">{{ brief.campaign_name }}</h1>
+            <p class="results-meta">
+              <strong>{{ brief.products | length }}</strong> products ·
+              <strong>{{ brief.region }}</strong> ·
+              <strong>{{ report.summary.total_outputs }}</strong> creatives generated
+            </p>
+          </div>
+        </div>
+        <div class="results-hero-actions">
+          <a href="/download-zip" class="btn btn-secondary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Download ZIP
+          </a>
+          <a href="/" class="btn btn-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+            </svg>
+            New Campaign
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Provider / run metadata strip ── -->
+    <div class="run-status-strip">
+      <div class="run-status-item">
+        <span class="run-status-label">Image provider</span>
+        <span class="run-status-value">{{ active_provider }}</span>
+      </div>
+      <div class="run-status-item">
+        <span class="run-status-label">Campaign message</span>
+        <span class="run-status-value run-status-message">{{ brief.campaign_message }}</span>
+      </div>
+      <div class="run-status-item">
+        <span class="run-status-label">Region</span>
+        <span class="run-status-value">{{ brief.region }}</span>
+      </div>
+      <div class="run-status-item">
+        <span class="run-status-label">Target audience</span>
+        <span class="run-status-value">{{ brief.target_audience }}</span>
+      </div>
+    </div>
+
+    <!-- ── Compliance warnings ── -->
+    {% if warnings %}
+    <div class="warnings-bar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      <div>
+        <strong>{{ warnings | length }} compliance warning{{ 's' if warnings | length != 1 else '' }}</strong>
+        <ul class="warnings-list">
+          {% for w in warnings %}<li>{{ w }}</li>{% endfor %}
+        </ul>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if errors %}
+    <div class="alert alert-error">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <div>
+        <strong>Pipeline errors</strong>
+        <ul style="margin-top:4px;">{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- ── Stats strip ── -->
+    <div class="stats-strip">
+      <div class="stat-item">
+        <span class="stat-value">{{ report.summary.total_products }}</span>
+        <span class="stat-label">Products</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">{{ report.summary.total_outputs }}</span>
+        <span class="stat-label">Creatives</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value stat-value--reused">{{ report.summary.reused_count }}</span>
+        <span class="stat-label">Assets reused</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value stat-value--generated">{{ report.summary.generated_count }}</span>
+        <span class="stat-label">Assets generated</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value {% if report.summary.warning_count > 0 %}stat-value--warn{% endif %}">{{ report.summary.warning_count }}</span>
+        <span class="stat-label">Warnings</span>
+      </div>
+    </div>
+
+    <!-- ── Creative outputs ── -->
+    <section class="section">
+      <h2 class="section-title">Creative Outputs</h2>
+
+      {% for product in previews %}
+      <div class="product-block">
+        <div class="product-block-header">
+          <div class="product-meta">
+            <span class="product-indicator"></span>
+            <h3 class="product-name">{{ product.name }}</h3>
+
+            {# Provider / asset badge #}
+            {% if product.name in report.assets_reused %}
+              <span class="asset-tag asset-tag--reused">Asset reused</span>
+            {% elif product.name in report.assets_generated %}
+              {% set used = report.generation_providers.get(product.name, 'mock') %}
+              {% if 'openai' in used %}
+                <span class="asset-tag asset-tag--openai">OpenAI · DALL-E 3</span>
+              {% elif 'gemini' in used %}
+                <span class="asset-tag asset-tag--gemini">Google Gemini</span>
+              {% elif 'fallback' in used %}
+                <span class="asset-tag asset-tag--fallback">Mock fallback</span>
+              {% else %}
+                <span class="asset-tag asset-tag--generated">Mock generated</span>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="creative-grid">
+          {% for ratio_key, img_url in product.ratios.items() %}
+          <div class="creative-card">
+            <div class="creative-label">
+              <span class="ratio-name">{{ ratio_key.replace('x', ':') }}</span>
+              <span class="ratio-dims">
+                {%- if ratio_key == '1x1' %}1080×1080
+                {%- elif ratio_key == '9x16' %}1080×1920
+                {%- elif ratio_key == '16x9' %}1920×1080
+                {%- endif -%}
+              </span>
+            </div>
+
+            <div class="creative-preview" data-ratio="{{ ratio_key }}">
+              {% if img_url %}
+                <img src="{{ img_url }}"
+                     alt="{{ product.name }} {{ ratio_key }} creative"
+                     loading="lazy" />
+              {% else %}
+                <div class="creative-missing">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <span>Output missing</span>
+                </div>
+              {% endif %}
+            </div>
+
+            {% if img_url %}
+            <a href="{{ img_url }}" download class="btn btn-ghost btn-sm creative-download">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Download
+            </a>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </section>
+
+    <!-- ── Run report ── -->
+    <section class="section">
+      <h2 class="section-title">Run Report</h2>
+      <div class="card">
+        <div class="card-body">
+          <div class="report-meta">
+            <div class="report-meta-item">
+              <span class="report-meta-label">Campaign</span>
+              <span class="report-meta-value">{{ report.campaign_name }}</span>
+            </div>
+            <div class="report-meta-item">
+              <span class="report-meta-label">Timestamp</span>
+              <span class="report-meta-value mono">{{ report.timestamp }}</span>
+            </div>
+            <div class="report-meta-item">
+              <span class="report-meta-label">Assets reused</span>
+              <span class="report-meta-value">{{ report.assets_reused | join(', ') or '—' }}</span>
+            </div>
+            <div class="report-meta-item">
+              <span class="report-meta-label">Assets generated</span>
+              <span class="report-meta-value">{{ report.assets_generated | join(', ') or '—' }}</span>
+            </div>
+          </div>
+          <details class="report-json-toggle">
+            <summary>View raw JSON</summary>
+            <pre class="report-json">{{ report | tojson(indent=2) }}</pre>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Campaign brief details ── -->
+    <section class="section">
+      <h2 class="section-title">Campaign Brief</h2>
+      <div class="card">
+        <div class="card-body">
+          <div class="brief-grid">
+            <div class="brief-item" style="grid-column:1/-1;">
+              <span class="brief-label">Message</span>
+              <span class="brief-value brief-value--message">{{ brief.campaign_message }}</span>
+            </div>
+            <div class="brief-item">
+              <span class="brief-label">Region</span>
+              <span class="brief-value">{{ brief.region }}</span>
+            </div>
+            <div class="brief-item">
+              <span class="brief-label">Target Audience</span>
+              <span class="brief-value">{{ brief.target_audience }}</span>
+            </div>
+            <div class="brief-item">
+              <span class="brief-label">Brand</span>
+              <span class="brief-value">{{ brief.brand.name or '—' }}</span>
+            </div>
+            <div class="brief-item">
+              <span class="brief-label">Primary Color</span>
+              <span class="brief-value">
+                <span class="color-swatch" style="background:{{ brief.brand.primary_color }}"></span>
+                {{ brief.brand.primary_color }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

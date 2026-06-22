@@ -1,0 +1,22 @@
+{
+  "campaign_name": "Summer Launch",
+  "region": "United States",
+  "target_audience": "Young adults interested in fitness and convenience",
+  "campaign_message": "Fuel your day anywhere",
+  "products": [
+    {
+      "name": "Spark Energy Drink",
+      "description": "A citrus energy drink for busy active consumers"
+    },
+    {
+      "name": "Pure Protein Bar",
+      "description": "A high protein snack bar for post workout recovery"
+    }
+  ],
+  "brand": {
+    "name": "Acme Consumer Goods",
+    "primary_color": "#1E3A5F",
+    "secondary_color": "#FFFFFF",
+    "logo_required": false
+  }
+}

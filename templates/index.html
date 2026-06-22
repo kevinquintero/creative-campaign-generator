@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Creative Automation Pipeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+          <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+          <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+        </svg>
+        <span class="brand-name">Creative Automation Pipeline</span>
+        <span class="brand-badge">v1.0</span>
+      </div>
+      <nav class="header-nav">
+        <span class="nav-item active">Generate</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+
+    <!-- Hero -->
+    <div class="page-hero">
+      <div class="page-hero-left">
+        <p class="hero-eyebrow">Brief → Images → Creatives</p>
+        <h1 class="page-title">Campaign Creative Generator</h1>
+        <p class="page-subtitle">
+          Paste a JSON campaign brief, optionally upload product images, and get
+          production-ready advertising creatives across all three placements — automatically.
+        </p>
+      </div>
+      <div class="provider-pill">
+        <span class="provider-dot"></span>
+        <span class="provider-label">Provider:</span>
+        <span class="provider-name">{{ active_provider }}</span>
+      </div>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            {% if category == 'error' %}
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            {% else %}
+            <circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/>
+            {% endif %}
+          </svg>
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endwith %}
+
+    <form class="pipeline-form" action="/generate" method="POST" enctype="multipart/form-data">
+      <div class="form-grid">
+
+        <!-- ── Campaign Brief ── -->
+        <section class="card form-card">
+          <div class="card-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+            <h2>Campaign Brief</h2>
+            <span class="required-tag">Required</span>
+          </div>
+          <div class="card-body">
+            <p class="field-hint">
+              Upload a <code>.json</code> file or paste the JSON directly.
+              Requires <code>campaign_name</code>, <code>region</code>, <code>target_audience</code>,
+              <code>campaign_message</code>, and at least two <code>products</code>.
+            </p>
+
+            <!-- File upload -->
+            <div class="field-group">
+              <label class="field-label" for="brief_file">Upload JSON file</label>
+              <div class="file-drop-zone" id="briefDropZone">
+                <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span class="drop-label">
+                  Drop <strong>.json</strong> here or
+                  <label for="brief_file" class="upload-link">browse</label>
+                </span>
+                <span class="drop-sub">Supports campaign_brief.json</span>
+                <input type="file" id="brief_file" name="brief_file" accept=".json" class="file-input" />
+                <div class="file-chip-list"></div>
+              </div>
+            </div>
+
+            <div class="divider"><span>or paste JSON</span></div>
+
+            <!-- JSON textarea -->
+            <div class="field-group">
+              <label class="field-label" for="brief_text">Campaign Brief JSON</label>
+              <textarea id="brief_text" name="brief_text" class="code-textarea" rows="18"
+                placeholder='{
+  "campaign_name": "Summer Launch",
+  "region": "United States",
+  "target_audience": "Young adults interested in fitness",
+  "campaign_message": "Fuel your day anywhere",
+  "products": [
+    {
+      "name": "Spark Energy Drink",
+      "description": "A citrus energy drink for busy consumers"
+    },
+    {
+      "name": "Pure Protein Bar",
+      "description": "High protein snack for post-workout recovery"
+    }
+  ],
+  "brand": {
+    "name": "Acme Consumer Goods",
+    "primary_color": "#1E3A5F",
+    "secondary_color": "#FFFFFF",
+    "logo_required": false
+  }
+}'></textarea>
+            </div>
+
+            <div class="sample-btn-row">
+              <button type="button" class="btn btn-ghost btn-sm" id="loadSample">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="1 4 1 10 7 10"/>
+                  <path d="M3.51 15a9 9 0 1 0 .49-3.5"/>
+                </svg>
+                Load sample brief
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Product Assets ── -->
+        <section class="card form-card">
+          <div class="card-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <h2>Product Assets</h2>
+            <span class="optional-tag">Optional</span>
+          </div>
+          <div class="card-body">
+            <p class="field-hint">
+              Upload product images to reuse instead of generating.
+              File names must match product names — e.g.
+              <code>spark_energy_drink.png</code>.
+              Missing assets are generated automatically by the configured provider.
+            </p>
+
+            <div class="field-group">
+              <label class="field-label">Upload product images</label>
+              <div class="file-drop-zone" id="assetDropZone" style="min-height:120px;">
+                <svg class="drop-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span class="drop-label">
+                  Drop <strong>PNG / JPG</strong> images or
+                  <label for="assets" class="upload-link">browse</label>
+                </span>
+                <span class="drop-sub">Multiple files supported</span>
+                <input type="file" id="assets" name="assets" accept=".png,.jpg,.jpeg,.webp" multiple class="file-input" />
+                <div class="file-chip-list"></div>
+              </div>
+            </div>
+
+            <!-- Asset matching rules -->
+            <div class="info-box">
+              <h3>Asset matching rules</h3>
+              <ul>
+                <li>Spaces and punctuation → underscores, all lowercase</li>
+                <li>Matching is case-insensitive across <code>.png .jpg .jpeg .webp</code></li>
+                <li><strong>Spark Energy Drink</strong> → <code>spark_energy_drink.png</code></li>
+                <li>No match → image generated by configured provider</li>
+              </ul>
+            </div>
+
+            <!-- Output format -->
+            <div class="info-box" style="margin-top:16px;">
+              <h3>Output format — 3 creatives per product</h3>
+              <div class="ratio-grid">
+                <div class="ratio-item">
+                  <div class="ratio-vis ratio-1x1"></div>
+                  <span>1:1</span>
+                  <code>1080×1080</code>
+                </div>
+                <div class="ratio-item">
+                  <div class="ratio-vis ratio-9x16"></div>
+                  <span>9:16</span>
+                  <code>1080×1920</code>
+                </div>
+                <div class="ratio-item">
+                  <div class="ratio-vis ratio-16x9"></div>
+                  <span>16:9</span>
+                  <code>1920×1080</code>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /form-grid -->
+
+      <!-- Submit -->
+      <div class="submit-section">
+        <div class="submit-row">
+          <button type="submit" class="btn btn-primary btn-lg" id="generateBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Generate Campaign Creatives
+          </button>
+          <a href="/download-zip" class="btn btn-secondary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Download Previous
+          </a>
+        </div>
+        <p class="submit-hint">
+          Provider: <strong>{{ active_provider }}</strong> · Pipeline runs locally · No cloud upload
+        </p>
+      </div>
+
+    </form>
+
+    <!-- Loading overlay -->
+    <div class="loading-overlay" id="loadingOverlay" hidden>
+      <div class="loading-card">
+        <div class="loading-header">
+          <svg class="loading-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12a9 9 0 11-6.219-8.56"/>
+          </svg>
+          <div class="loading-text-group">
+            <p class="loading-title">Generating creatives…</p>
+            <p class="loading-sub">This takes 5–15 seconds with mock generation</p>
+          </div>
+        </div>
+        <!-- Steps injected by main.js -->
+      </div>
+    </div>
+
+  </main>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
