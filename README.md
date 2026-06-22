@@ -1,115 +1,147 @@
-# Creative Automation Pipeline
+# Creative Campaign Generator
 
-A local proof-of-concept that automates creative asset generation for social ad campaigns. Given a campaign brief and optional product images, the pipeline generates polished social media creatives in three aspect ratios for every product in the brief.
+An app that takes a campaign brief — two products, a message, a target region — and automatically generates polished social media ads in three sizes: square (1:1), vertical story (9:16), and horizontal banner (16:9). It uses AI to create the product photography, then layers in your campaign text, brand colors, and a call-to-action button on top.
 
-Built as a take-home exercise demonstrating GenAI integration, provider abstraction, composited image output, and clean local tooling — no cloud deployment required.
-
----
-
-## Problem Being Solved
-
-Marketing teams launching localized campaigns must manually produce multiple ad variants per product, per region, per format. This is slow, error-prone, and doesn't scale. This pipeline automates that:
-
-- Accept a structured campaign brief (JSON)
-- Reuse existing product assets when available
-- Generate missing product hero images via GenAI (or a realistic mock)
-- Compose final creatives — complete with campaign message, brand colors, and region badge — for every standard social format
-- Output organized files ready for download and review
+No design software. No Photoshop. Just fill in a form and click a button.
 
 ---
 
-## Quick Start (Windows)
+## Before You Start — What You Need
 
-### Option A — Double-click launcher (recommended)
+You need **Python** installed on your computer. That's the only prerequisite.
+
+**Check if Python is already installed:**
+
+Open a terminal (search "Command Prompt" in the Windows Start menu) and type:
 
 ```
-Double-click run_app.bat
+python --version
 ```
 
-The launcher checks for Python, starts Flask, waits 3 seconds, then opens `http://127.0.0.1:5000` in your default browser. Keep the terminal window open; close it to stop the server.
+If you see something like `Python 3.11.2` you're good. If you get an error, download Python here:
 
-### Option B — Terminal
+**[https://www.python.org/downloads/](https://www.python.org/downloads/)**
 
-```bat
-cd "path\to\creative-automation-pipeline"
-python -m venv venv
-venv\Scripts\activate
+Click the big yellow "Download Python" button. Run the installer. On the first screen, **check the box that says "Add Python to PATH"** before clicking Install. That checkbox is easy to miss and important.
+
+---
+
+## How to Run the App
+
+### Step 1 — Download the project
+
+Click the green **Code** button on this GitHub page, then **Download ZIP**. Unzip it somewhere on your computer — your Desktop is fine.
+
+Or if you have Git:
+```
+git clone https://github.com/kevinquintero/creative-campaign-generator.git
+```
+
+### Step 2 — Open a terminal in the project folder
+
+In Windows Explorer, navigate into the folder you just unzipped. You should see files like `app.py`, `run_app.bat`, and `sample_campaign.json`.
+
+Right-click anywhere in that folder and choose **"Open in Terminal"** (or "Open PowerShell window here").
+
+### Step 3 — Install the required libraries (one time only)
+
+In that terminal, paste this and press Enter:
+
+```
 pip install -r requirements.txt
+```
+
+This downloads all the Python packages the app needs. It takes about 30 seconds. You only ever need to do this once.
+
+### Step 4 — Run the app
+
+**Option A — Double-click (easiest):**
+
+Double-click `run_app.bat` in the project folder. A terminal window opens, and your browser opens automatically to the app. Keep that terminal window open while you use the app. Close it to stop.
+
+**Option B — From the terminal:**
+
+```
 python app.py
 ```
 
-Then open [http://127.0.0.1:5000](http://127.0.0.1:5000).
-
----
-
-## Setup
-
-### Requirements
-
-- Python 3.10 or higher
-- pip
-- No cloud account or paid API key required to run the demo
-
-### Install dependencies
-
-```bat
-pip install -r requirements.txt
-```
-
-### Environment variables (optional)
-
-```bat
-copy .env.example .env
-```
-
-Edit `.env` if you want to use a real GenAI provider. Without it, the app runs in mock mode automatically.
-
----
-
-## API Keys
-
-The app has three operating modes, selected by the `IMAGE_PROVIDER` variable in `.env`:
-
-| Mode | `IMAGE_PROVIDER` | Key needed |
-|---|---|---|
-| Mock (default) | `mock` or unset | None — runs fully offline |
-| Google Gemini | `gemini` | `GEMINI_API_KEY` |
-| OpenAI DALL-E 3 | `openai` | `OPENAI_API_KEY` |
-
-### Where to set keys
-
-In `.env` (copy from `.env.example`):
-
-```env
-IMAGE_PROVIDER=gemini
-GEMINI_API_KEY=your-key-here
-```
-
-Get a Gemini key at [aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey) — free tier available.
-
-### Mock fallback
-
-If no key is set (or the configured provider fails), the pipeline automatically falls back to `MockImageProvider`. Mock images are styled Pillow-rendered product illustrations — a can shape for beverages, a bar shape for snacks, etc. — with brand colors and studio-style shading. They are clearly labelled as mock in the UI and run report.
-
-**The app never crashes due to a missing API key.** All provider errors are caught and logged.
+Then open [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
 
 ---
 
 ## Using the App
 
-1. Open [http://127.0.0.1:5000](http://127.0.0.1:5000)
-2. Click **Load sample JSON** to pre-fill the brief, or paste/upload your own
-3. Optionally upload product images (PNG/JPG) — they will be matched to products by filename
-4. Click **Generate Campaign Creatives**
-5. View the creative grid: three aspect ratios per product, campaign message overlaid
-6. Expand **Run Report** to see asset provenance and compliance flags
-7. Click **Download ZIP** to get all outputs in one archive
+Once the browser is open:
+
+1. Click **"Load sample JSON"** — this fills in a ready-made campaign brief with two products
+2. Click **"Generate Campaign Creatives"**
+3. Wait about 5–15 seconds
+4. Your six ads appear on screen (two products × three sizes)
+5. Click **"Download ZIP"** to save all the images at once
+
+That's it. The sample brief is already set up and works with zero configuration.
+
+---
+
+## AI Image Generation (Optional)
+
+By default the app generates placeholder product images using code — no internet connection, no API key, completely free. These placeholders are good enough to show the pipeline working.
+
+If you want **real AI-generated product photos**, you need a free Google Gemini API key:
+
+1. Go to [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+2. Sign in with a Google account and click **"Create API key"**
+3. Copy the key
+
+Then in the project folder:
+
+- Find the file called `.env.example`
+- Make a copy of it and rename the copy to `.env` (just `.env`, no "example")
+- Open `.env` in Notepad
+- Change these two lines:
+
+```
+IMAGE_PROVIDER=gemini
+GEMINI_API_KEY=paste-your-key-here
+```
+
+Save the file and restart the app. Now when you generate, it calls Gemini to create real product photography.
+
+**If you skip this step, the app still works fine** — it just uses illustrated placeholders instead of AI photos.
+
+> **Note:** `.env` is never uploaded to GitHub. Your API key stays on your machine only.
+
+---
+
+## What the Output Looks Like
+
+After generating, your files are saved here:
+
+```
+output/
+├── Spark_Energy_Drink/
+│   ├── 1x1/final.png       Square — 1080 × 1080 px  (Instagram feed)
+│   ├── 9x16/final.png      Vertical — 1080 × 1920 px  (Stories, Reels)
+│   └── 16x9/final.png      Horizontal — 1920 × 1080 px  (YouTube, banners)
+├── Pure_Protein_Bar/
+│   ├── 1x1/final.png
+│   ├── 9x16/final.png
+│   └── 16x9/final.png
+└── run_report.json         Log of what ran, what was generated, any warnings
+```
+
+Each image has:
+- The product photo filling the entire frame
+- Campaign message in large bold text
+- Product name beneath it
+- Region badge in the corner
+- A call-to-action button in the brand color
 
 ---
 
 ## Sample Campaign Brief
 
-`sample_campaign.json` is included in the repo:
+The file `sample_campaign.json` is already in the repo. Click "Load sample JSON" in the app and it fills in automatically. Here's what it looks like:
 
 ```json
 {
@@ -136,45 +168,23 @@ If no key is set (or the configured provider fails), the pipeline automatically 
 }
 ```
 
-### Required fields
-
-| Field | Type | Description |
-|---|---|---|
-| `campaign_name` | string | Display name for the campaign |
-| `region` | string | Target market/region (shown as badge on creatives) |
-| `target_audience` | string | Audience description (passed to GenAI prompt) |
-| `campaign_message` | string | Primary ad copy, overlaid on every creative |
-| `products` | array | At least two items; each needs `name`, optionally `description` |
-| `brand.primary_color` | hex string | Drives palette, gradients, CTA color |
-| `brand.secondary_color` | hex string | Text and badge accent |
+You can paste in your own brief or upload a `.json` file. The only hard requirements are: at least two products, a campaign message, and a region.
 
 ---
 
-## Output Structure
+## Uploading Your Own Product Images
 
-```
-output/
-├── Spark_Energy_Drink/
-│   ├── 1x1/final.png       1080 × 1080 px
-│   ├── 9x16/final.png      1080 × 1920 px
-│   └── 16x9/final.png      1920 × 1080 px
-├── Pure_Protein_Bar/
-│   ├── 1x1/final.png
-│   ├── 9x16/final.png
-│   └── 16x9/final.png
-└── run_report.json
-```
+If you have product photos you want to use instead of AI-generated ones:
 
-Each creative contains:
-- Product hero image (full-bleed, cover-cropped, with gradient scrim)
-- Campaign message in large bold type
-- Product name below the headline
-- Region badge in the top-right corner
-- Brand-colored CTA button
+1. Name the file the same as the product, with underscores instead of spaces — e.g. `spark_energy_drink.png`
+2. Use the **"Upload product images"** section on the form before clicking Generate
+3. The app will use your image instead of generating one
+
+The UI will show an "Asset reused" badge next to that product in the results.
 
 ---
 
-## Architecture
+## How It Works (for the technical reviewers)
 
 ```
 Campaign Brief (JSON)  +  Product Images (optional)
@@ -184,14 +194,14 @@ Campaign Brief (JSON)  +  Product Images (optional)
 │ app.py — Flask routes, pipeline orchestration   │
 └─────────────────────────────────────────────────┘
           │
-          ├─▶ brief_parser.py      Validate JSON → CampaignBrief dataclass
-          ├─▶ asset_manager.py     Match uploaded files to products by name
-          ├─▶ image_generator.py   ImageGenerator → provider (Mock / Gemini / OpenAI)
-          ├─▶ creative_builder.py  Orchestrate composition per product × ratio
-          ├─▶ design_system.py     Palette, Spacing, TypeScale, draw primitives
-          ├─▶ creative_templates.py  4 templates × 3 ratios = 12 layout variants
-          ├─▶ compliance.py        Prohibited word checks + output validation
-          └─▶ reporting.py         run_report.json writer
+          ├─▶ brief_parser.py       Validate JSON → CampaignBrief dataclass
+          ├─▶ asset_manager.py      Match uploaded files to products by name
+          ├─▶ image_generator.py    ImageGenerator → provider (Mock / Gemini / OpenAI)
+          ├─▶ creative_builder.py   Orchestrate composition per product × ratio
+          ├─▶ design_system.py      Palette, Spacing, TypeScale, draw primitives
+          ├─▶ creative_templates.py 4 templates × 3 ratios = 12 layout variants
+          ├─▶ compliance.py         Prohibited word checks + output validation
+          └─▶ reporting.py          run_report.json writer
 ```
 
 ### Module responsibilities
@@ -221,7 +231,7 @@ Adding a new provider (e.g. Adobe Firefly) means subclassing `BaseImageProvider`
 
 ### Template and design system
 
-Rather than hard-coding pixel offsets, every template receives a `Palette`, `Spacing`, and `TypeScale` derived from the canvas dimensions. This means layout proportions hold correctly across 1080×1080, 1080×1920, and 1920×1080 without separate implementations per ratio.
+Rather than hard-coding pixel offsets, every template receives a `Palette`, `Spacing`, and `TypeScale` derived from the canvas dimensions. Layout proportions hold correctly across 1080×1080, 1080×1920, and 1920×1080 without separate implementations per ratio.
 
 Four named templates (`Minimal`, `Bold`, `Premium`, `Editorial`) are selected deterministically by MD5-hashing `(product_name + brand_primary)`. Same campaign always produces the same template assignments.
 
@@ -235,7 +245,11 @@ Each `/generate` request clears previous outputs, runs the full pipeline, and re
 
 ### Crash safety
 
-The app catches all brief validation errors (`BriefValidationError`) and provider failures, showing user-facing messages rather than crashing. The Flask reloader is disabled (`use_reloader=False`) to prevent Werkzeug's watchdog from killing in-flight requests on Python 3.12+.
+The app catches all brief validation errors and provider failures, showing user-facing messages rather than crashing. The Flask reloader is disabled (`use_reloader=False`) to prevent Werkzeug's watchdog from killing in-flight requests on Python 3.12+.
+
+### AI generates photography only — layout is programmatic
+
+AI providers (Gemini, OpenAI) generate product photography. All text, buttons, gradients, badges, and brand lockups are drawn in Python from the campaign brief data. This guarantees that the campaign message, product name, and region in the output exactly match what was specified — a compliance requirement for advertising automation.
 
 ---
 
@@ -244,7 +258,6 @@ The app catches all brief validation errors (`BriefValidationError`) and provide
 - **English only.** Campaign message text is English. Localization is not implemented.
 - **One run per session.** Outputs are cleared on each generate request — appropriate for a demo, not a multi-user production system.
 - **No logo compositing.** `logo_required: false` is parsed and respected; actual logo placement is not implemented.
-- **No persistent storage.** Generated files live in `output/` and are cleared on the next run.
 - **Mock images are illustrations, not photos.** They demonstrate the pipeline but are not photorealistic. Use Gemini or OpenAI for realistic hero images.
 - **Single-process Flask.** Suitable for local demo. For concurrent use, add gunicorn with multiple workers.
 
@@ -252,53 +265,34 @@ The app catches all brief validation errors (`BriefValidationError`) and provide
 
 ## Running Tests
 
-```bat
+```
 python -m pytest tests/ -v
 ```
 
-**23 tests, all passing.** Coverage includes:
-
-- Brief parsing and field validation
-- Asset matching (normalized filenames, case/extension variations)
-- Compliance checks (prohibited words, output validation)
-- Mock image generation (correct dimensions, RGB mode)
-- Provider fallback chain
-- Template selection (deterministic, covers all 4 templates)
-- Design system (palette, spacing, type scale)
-- Full end-to-end pipeline (builds all 6 output files)
-- Output verification (correct paths, file size > 0)
-- ZIP download route
+**23 tests, all passing.** Covers brief parsing, asset matching, compliance checks, mock generation, provider fallback, template selection, the full end-to-end pipeline, and output verification.
 
 ---
 
-## Demo Video Notes
+## Demo Video Script (~2.5 minutes)
 
-**Suggested script (~2.5 minutes):**
-
-1. Show the project root: `run_app.bat`, `sample_campaign.json`, `src/` folder
+1. Show the project folder: `run_app.bat`, `sample_campaign.json`
 2. Double-click `run_app.bat` — browser opens automatically
-3. Click **Load sample JSON** — show the brief: two products, region, message, brand color
-4. Click **Generate Campaign Creatives** — wait ~5s (mock) or ~15s (Gemini)
-5. Walk the results page:
-   - Stats strip: 2 products, 6 creatives generated
-   - Spark Energy Drink grid: 1:1 square, 9:16 story, 16:9 landscape
-   - Pure Protein Bar grid: same layout, visually distinct template
-   - Point out: campaign message overlaid, region badge, CTA button
-6. Expand **Run Report** — show timestamp, provider used, compliance warnings
-7. Click **Download ZIP** — show `output/` folder structure in the archive
-8. *(Optional)* Upload a product image named `spark_energy_drink.png`, re-run — show "Asset reused" badge
+3. Click **Load sample JSON** — show the brief: two products, campaign message, brand color
+4. Click **Generate Campaign Creatives** — wait for results
+5. Walk the results page: stats strip, creative grid per product, point out message/badge/CTA
+6. Expand **Run Report** — show provider used, compliance status
+7. Click **Download ZIP** — show folder structure
 
 ---
 
 ## Future Improvements
 
-- **Localization** — translate campaign message based on `region` field using a translation API
-- **Logo compositing** — place brand logo in a consistent corner slot when `logo_required: true`
-- **A/B variant generation** — produce multiple layout variants per product for split testing
-- **Adobe Firefly integration** — brand-safe image generation with logo/style consistency
-- **Approval workflow** — lightweight status flags on the results page (Approve / Request changes)
+- **Localization** — translate campaign message based on `region` using a translation API
+- **Logo compositing** — place brand logo in a consistent corner when `logo_required: true`
+- **A/B variant generation** — multiple layout variants per product for split testing
+- **Adobe Firefly integration** — brand-safe image generation with style consistency
+- **Approval workflow** — lightweight approve/reject flags on the results page
 - **Persistent storage** — save past runs to local SQLite or cloud bucket for comparison
-- **Performance** — async generation with progress streaming for large campaigns
 
 ---
 
